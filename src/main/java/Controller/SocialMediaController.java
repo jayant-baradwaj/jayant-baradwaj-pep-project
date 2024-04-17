@@ -28,14 +28,14 @@ public class SocialMediaController {
      */
     public Javalin startAPI() {
         Javalin app = Javalin.create();
-        app.post("/register/*", this::registerAccountHandler); //1
-        app.post("/login/*", this::loginAccountHandler); //2
-        app.post("/messages/*", this::createMessageHandler); //3
-        app.get("/messages/*", this::retrieveMessagesHandler); //4
-        app.get("/messages/{message_id}/*", this::retrieveMessageByMessageIdHandler); //5
-        app.delete("/messages/{message_id}/*", this::deleteMessageByMessageIdHandler); //6
-        app.patch("/messages/{message_id}/*", this::updateMessageHandler); //7
-        app.get("/accounts/{account_id}/messages/*", this::retrieveMessagesForAccountHandler); //8
+        app.post("/register", this::registerAccountHandler); //1
+        app.post("/login", this::loginAccountHandler); //2
+        app.post("/messages", this::createMessageHandler); //3
+        app.get("/messages", this::retrieveMessagesHandler); //4
+        app.get("/messages/{message_id}", this::retrieveMessageByMessageIdHandler); //5
+        app.delete("/messages/{message_id}", this::deleteMessageByMessageIdHandler); //6
+        app.patch("/messages/{message_id}", this::updateMessageHandler); //7
+        app.get("/accounts/{account_id}/messages", this::retrieveMessagesForAccountHandler); //8
         
         return app;
     }
@@ -51,6 +51,7 @@ public class SocialMediaController {
         if(registeredAccount != null)
         {
             ctx.json(mapper.writeValueAsString(registeredAccount));
+            ctx.status(200);
         }
         else
         {
@@ -69,6 +70,7 @@ public class SocialMediaController {
         if(login != null)
         {
             ctx.json(mapper.writeValueAsString(login));
+            ctx.status(200);
         }
         else
         {
@@ -87,6 +89,7 @@ public class SocialMediaController {
         if(createdMessage != null)
         {
             ctx.json(mapper.writeValueAsString(createdMessage));
+            ctx.status(200);
         }
         else
         {
@@ -101,6 +104,7 @@ public class SocialMediaController {
     {
         List<Message> messages = messageService.retrieveMessages();
         ctx.json(messages);
+        ctx.status(200);
     }
 
     /**
@@ -111,6 +115,7 @@ public class SocialMediaController {
         int id = Integer.parseInt(ctx.pathParam("message_id"));
         Message message = messageService.retrieveMessageByMessageId(id);
         ctx.json(message);
+        ctx.status(200);
     }
 
     /**
@@ -121,6 +126,7 @@ public class SocialMediaController {
         int id = Integer.parseInt(ctx.pathParam("message_id"));
         Message message = messageService.deleteMessageByMessageId(id);
         ctx.json(message);
+        ctx.status(200);
     }
 
     /**
@@ -135,6 +141,7 @@ public class SocialMediaController {
         if(message != null)
         {
             ctx.json(message);
+            ctx.status(200);
         }
         else
         {
@@ -150,6 +157,7 @@ public class SocialMediaController {
         int id = Integer.parseInt(ctx.pathParam("account_id"));
         List<Message> messages = messageService.retrieveMessagesForAccount(id);
         ctx.json(messages);
+        ctx.status(200);
     }
 
 }
