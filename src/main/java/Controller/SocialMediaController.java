@@ -10,6 +10,8 @@ import Service.MessageService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
+import java.util.List;
+
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
  * found in readme.md as well as the test cases. You should
@@ -29,11 +31,11 @@ public class SocialMediaController {
         app.post("/register", this::registerAccountHandler); //1
         app.post("/login", this::loginAccountHandler); //2
         app.post("/messages", this::createMessageHandler); //3
-        app.get("/messages", this::getMessagesHandler); //4
-        app.get("/messages/{message_id}", this::getMessageByMessageIdHandler); //5
+        app.get("/messages", this::retrieveMessagesHandler); //4
+        app.get("/messages/{message_id}", this::retrieveMessageByMessageIdHandler); //5
         app.delete("/messages/{message_id}", this::deleteMessageByMessageIdHandler); //6
         app.patch("/messages/{message_id}", this::updateMessageHandler); //7
-        app.get("/accounts/{account_id}/messages", this::getMessageForAccountHandler); //8
+        app.get("/accounts/{account_id}/messages", this::retrieveMessagesForAccountHandler); //8
         
         return app;
     }
@@ -63,7 +65,15 @@ public class SocialMediaController {
     {
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(ctx.body(), Account.class);
-        //accountService.loginAccount
+        Account login = accountService.loginAccount(account);
+        if(login != null)
+        {
+            ctx.json(mapper.writeValueAsString(login));
+        }
+        else
+        {
+            ctx.status(401);
+        }
     }
 
     /**
@@ -73,23 +83,33 @@ public class SocialMediaController {
     {
         ObjectMapper mapper = new ObjectMapper();
         Message message = mapper.readValue(ctx.body(), Message.class);
-        //messageService.createMessage
+        Message createdMessage = messageService.createMessage(message);
+        if(createdMessage != null)
+        {
+            ctx.json(mapper.writeValueAsString(createdMessage));
+        }
+        else
+        {
+            ctx.status(400);
+        }
     }
 
     /**
      * @param ctx the context object handles information HTTP requests and generates responses within Javalin
     */
-    private void getMessagesHandler(Context ctx)
+    private void retrieveMessagesHandler(Context ctx)
     {
-        //messageService.getMessages
+        List<Message> messages = messageService.retrieveMessages();
+        ctx.json(messages);
     }
 
     /**
      * @param ctx the context object handles information HTTP requests and generates responses within Javalin
     */
-    private void getMessageByMessageIdHandler(Context ctx)
+    private void retrieveMessageByMessageIdHandler(Context ctx)
     {
-        //messageService.getMessageById
+        Message message = messageService.retrieveMessageByMessageId(1);
+        ctx.json(message);
     }
 
     /**
@@ -97,23 +117,35 @@ public class SocialMediaController {
     */
     private void deleteMessageByMessageIdHandler(Context ctx)
     {
-        //messageService.deleteMessageById
+        Message message = messageService.deleteMessageByMessageId(1);
+        ctx.json(message);
     }
 
     /**
      * @param ctx the context object handles information HTTP requests and generates responses within Javalin
     */
-    private void updateMessageHandler(Context ctx)
+    private void updateMessageHandler(Context ctx) throws JsonProcessingException
     {
-        //messageService.updateMessage
+        ObjectMapper mapper = new ObjectMapper();
+        String newText = mapper.readValue(ctx.body(), String.class);
+        Message message = messageService.updateMessage(1, newText);
+        if(message != null)
+        {
+            ctx.json(message);
+        }
+        else
+        {
+            ctx.status(400);
+        }
     }
 
     /**
      * @param ctx the context object handles information HTTP requests and generates responses within Javalin
     */
-    private void getMessageForAccountHandler(Context ctx)
+    private void retrieveMessagesForAccountHandler(Context ctx)
     {
-        //messageService.getMessageForAccount
+        List<Message> messages = messageService.retrieveMessagesForAccount(1);
+        ctx.json(messages);
     }
 
 }

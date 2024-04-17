@@ -26,9 +26,11 @@ public class AccountService {
         return accountDAO.registerAccount(account);
     }
 
+    /**
+     * @param account 
+    */
     public Account loginAccount(Account account)
     {
-        //accountDAO.loginAccount
-        return null;
+        return accountDAO.loginAccount(account);
     }
 }
