@@ -33,22 +33,24 @@ public class AccountDAO {
         }
 
         //Insert the new account into the database
-        Connection connection = ConnectionUtil.getConnection();
-        try 
+        try (Connection connection = ConnectionUtil.getConnection();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO account (username, password) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);) 
         {
-            String sql = "INSERT INTO account (username, password) VALUES (?, ?)";
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
             ps.setString(1, account.getUsername());
             ps.setString(2, account.getPassword());
 
             ps.executeUpdate();
-            ResultSet pkeyResultSet = ps.getGeneratedKeys();
-            if(pkeyResultSet.next())
+            try (ResultSet pkeyResultSet = ps.getGeneratedKeys();) 
             {
-                int gen_acc_id = pkeyResultSet.getInt(1);
-                return new Account(gen_acc_id, account.getUsername(), account.getPassword());
-            }
+                if(pkeyResultSet.next())
+                {
+                    int gen_acc_id = pkeyResultSet.getInt(1);
+                    return new Account(gen_acc_id, account.getUsername(), account.getPassword());
+                }
+            } catch (Exception e) 
+            {
+                e.printStackTrace();
+            } 
         } 
         catch (SQLException e) 
         {
@@ -94,13 +96,13 @@ public class AccountDAO {
     private List<Account> getAllAccounts()
     {
         //Create a list of all accounts registered
-        Connection connection = ConnectionUtil.getConnection();
         List<Account> accounts = new ArrayList<>();
-        try 
+
+        try (Connection connection = ConnectionUtil.getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM account");
+            ResultSet rs = ps.executeQuery();) 
         {
-            String sql = "SELECT * FROM account";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            
             while(rs.next())
             {
                 Account account = new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
@@ -110,7 +112,7 @@ public class AccountDAO {
         catch (SQLException e) 
         {
             System.out.println(e.getMessage());
-        } 
+        }
 
         return accounts;
     }
