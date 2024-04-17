@@ -28,14 +28,14 @@ public class SocialMediaController {
      */
     public Javalin startAPI() {
         Javalin app = Javalin.create();
-        app.post("/register", this::registerAccountHandler); //1
-        app.post("/login", this::loginAccountHandler); //2
-        app.post("/messages", this::createMessageHandler); //3
-        app.get("/messages", this::retrieveMessagesHandler); //4
-        app.get("/messages/{message_id}", this::retrieveMessageByMessageIdHandler); //5
-        app.delete("/messages/{message_id}", this::deleteMessageByMessageIdHandler); //6
-        app.patch("/messages/{message_id}", this::updateMessageHandler); //7
-        app.get("/accounts/{account_id}/messages", this::retrieveMessagesForAccountHandler); //8
+        app.post("/register/*", this::registerAccountHandler); //1
+        app.post("/login/*", this::loginAccountHandler); //2
+        app.post("/messages/*", this::createMessageHandler); //3
+        app.get("/messages/*", this::retrieveMessagesHandler); //4
+        app.get("/messages/{message_id}/*", this::retrieveMessageByMessageIdHandler); //5
+        app.delete("/messages/{message_id}/*", this::deleteMessageByMessageIdHandler); //6
+        app.patch("/messages/{message_id}/*", this::updateMessageHandler); //7
+        app.get("/accounts/{account_id}/messages/*", this::retrieveMessagesForAccountHandler); //8
         
         return app;
     }
@@ -108,7 +108,8 @@ public class SocialMediaController {
     */
     private void retrieveMessageByMessageIdHandler(Context ctx)
     {
-        Message message = messageService.retrieveMessageByMessageId(1);
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = messageService.retrieveMessageByMessageId(id);
         ctx.json(message);
     }
 
@@ -117,7 +118,8 @@ public class SocialMediaController {
     */
     private void deleteMessageByMessageIdHandler(Context ctx)
     {
-        Message message = messageService.deleteMessageByMessageId(1);
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = messageService.deleteMessageByMessageId(id);
         ctx.json(message);
     }
 
@@ -128,7 +130,8 @@ public class SocialMediaController {
     {
         ObjectMapper mapper = new ObjectMapper();
         String newText = mapper.readValue(ctx.body(), String.class);
-        Message message = messageService.updateMessage(1, newText);
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = messageService.updateMessage(id, newText);
         if(message != null)
         {
             ctx.json(message);
@@ -144,7 +147,8 @@ public class SocialMediaController {
     */
     private void retrieveMessagesForAccountHandler(Context ctx)
     {
-        List<Message> messages = messageService.retrieveMessagesForAccount(1);
+        int id = Integer.parseInt(ctx.pathParam("account_id"));
+        List<Message> messages = messageService.retrieveMessagesForAccount(id);
         ctx.json(messages);
     }
 
