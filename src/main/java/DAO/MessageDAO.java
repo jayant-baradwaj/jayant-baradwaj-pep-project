@@ -31,21 +31,25 @@ public class MessageDAO {
         }
 
         //Insert new message into database
-        Connection connection = ConnectionUtil.getConnection();
-        try 
+        try (Connection connection = ConnectionUtil.getConnection();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO messages (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);)
         {
-            String sql = "INSERT INTO messages (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setInt(1, message.getPosted_by());
             ps.setString(2, message.getMessage_text());
             ps.setLong(3, message.getTime_posted_epoch());
 
-            ResultSet pkeyResultSet = ps.getGeneratedKeys();
-            if(pkeyResultSet.next())
+            try(ResultSet pkeyResultSet = ps.getGeneratedKeys();)
             {
-                int gen_msg_id = pkeyResultSet.getInt(1);
-                return new Message(gen_msg_id, message.getPosted_by(), message.getMessage_text(), message.getTime_posted_epoch());
+                if(pkeyResultSet.next())
+                {
+                    int gen_msg_id = pkeyResultSet.getInt(1);
+                    return new Message(gen_msg_id, message.getPosted_by(), message.getMessage_text(), message.getTime_posted_epoch());
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
             }
         } 
         catch (SQLException e) 
@@ -63,18 +67,21 @@ public class MessageDAO {
     private Account getUser(Message message)
     {
         //Check to make sure the account exists
-        Connection connection = ConnectionUtil.getConnection();
-        try 
-        {
-            String sql = "SELECT * FROM account WHERE account_id=?";
-            PreparedStatement ps = connection.prepareStatement(sql);
-
+        try (Connection connection = ConnectionUtil.getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM account WHERE account_id=?");) 
+        {   
             ps.setInt(1, message.getPosted_by());
 
-            ResultSet rs = ps.executeQuery();
-            if(rs.next())
+            try(ResultSet rs = ps.executeQuery();)
             {
-                return new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
+                if(rs.next())
+                {
+                    return new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
             }
         } 
         catch (SQLException e) 
@@ -91,9 +98,8 @@ public class MessageDAO {
     public List<Message> retrieveMessages()
     {
         //Create a list of all messages in the database
-        Connection connection = ConnectionUtil.getConnection();
         List<Message> messages = new ArrayList<>();
-        try 
+        try (Connection connection = ConnectionUtil.getConnection();)
         {
             String sql = "SELECT * FROM message";
             PreparedStatement ps = connection.prepareStatement(sql);
