@@ -5,9 +5,6 @@ import Model.Account;
 
 import java.sql.*;
 
-/*import java.util.List;
-import java.util.ArrayList;*/
-
 public class AccountDAO {
     
     /**
@@ -22,16 +19,6 @@ public class AccountDAO {
             return null;
         }
 
-        //If username already exists in the database, return null
-        /*List<Account> accounts = getAllAccounts();
-        for(Account acc : accounts)
-        {
-            if(acc.getUsername().equals(account.getUsername()))
-            {
-                return null;
-            }
-        }*/
-
         //Insert the new account into the database
         try (Connection connection = ConnectionUtil.getConnection();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO account (username, password) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);) 
@@ -43,15 +30,12 @@ public class AccountDAO {
             int affectedRows = ps.executeUpdate();
             if(affectedRows == 0)
             {
-                //throw new SQLException("Account creation failed");
                 return null;
             }
             try (ResultSet pkeyResultSet = ps.getGeneratedKeys();) 
             {
                 if(pkeyResultSet.next())
                 {
-                    //int gen_acc_id = pkeyResultSet.getInt(1);
-                    //return new Account(gen_acc_id, account.getUsername(), account.getPassword());
                     account.setAccount_id(pkeyResultSet.getInt(1));
                     return account;
                 }
@@ -102,31 +86,4 @@ public class AccountDAO {
 
         return null;
     }
-
-    /**
-     * private helper method to assist with user registration to check for existing username
-    */
-   /*private List<Account> getAllAccounts()
-    {
-        //Create a list of all accounts registered
-        List<Account> accounts = new ArrayList<>();
-
-        try (Connection connection = ConnectionUtil.getConnection();
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM account");
-            ResultSet rs = ps.executeQuery();) 
-        {
-            
-            while(rs.next())
-            {
-                Account account = new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
-                accounts.add(account);
-            }
-        } 
-        catch (SQLException e) 
-        {
-            System.out.println(e.getMessage());
-        }
-
-        return accounts;
-    }*/
 }

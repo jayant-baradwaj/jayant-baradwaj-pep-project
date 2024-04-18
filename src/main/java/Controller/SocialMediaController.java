@@ -91,9 +91,6 @@ public class SocialMediaController {
     {
         ObjectMapper mapper = new ObjectMapper();
         Message message = mapper.readValue(ctx.body(), Message.class);
-        System.out.println(message.getMessage_text());
-        System.out.println(message.getPosted_by());
-        System.out.println(message.getTime_posted_epoch());
         Message createdMessage = messageService.createMessage(message);
         if(createdMessage != null)
         {
@@ -122,9 +119,15 @@ public class SocialMediaController {
     private void retrieveMessageByMessageIdHandler(Context ctx)
     {
         int id = Integer.parseInt(ctx.pathParam("message_id"));
-        System.out.println(id);
         Message message = messageService.retrieveMessageByMessageId(id);
-        ctx.json(message);
+        if(message != null)
+        {
+            ctx.json(message);
+        }
+        else
+        {
+            ctx.json("");
+        }
         ctx.status(200);
     }
 
@@ -134,9 +137,15 @@ public class SocialMediaController {
     private void deleteMessageByMessageIdHandler(Context ctx)
     {
         int id = Integer.parseInt(ctx.pathParam("message_id"));
-        System.out.println(id);
         Message message = messageService.deleteMessageByMessageId(id);
-        ctx.json(message);
+        if(message != null)
+        {
+            ctx.json(message);
+        }
+        else
+        {
+            ctx.json("");
+        }
         ctx.status(200);
     }
 
@@ -146,9 +155,11 @@ public class SocialMediaController {
     private void updateMessageHandler(Context ctx) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        String newText = mapper.readValue(ctx.body(), String.class);
+        Object newText = mapper.readValue(ctx.body(), Object.class);
+        String[] keyValuePair = newText.toString().split("=");
+        keyValuePair[1] = keyValuePair[1].substring(0,keyValuePair[1].length()-1);
         int id = Integer.parseInt(ctx.pathParam("message_id"));
-        Message message = messageService.updateMessage(id, newText);
+        Message message = messageService.updateMessage(id, keyValuePair[1]);
         if(message != null)
         {
             ctx.json(message);

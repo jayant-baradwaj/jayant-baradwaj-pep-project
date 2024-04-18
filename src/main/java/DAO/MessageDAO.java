@@ -32,19 +32,20 @@ public class MessageDAO {
 
         //Insert new message into database
         try (Connection connection = ConnectionUtil.getConnection();
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO messages (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);)
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO message (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);)
         {
 
             ps.setInt(1, message.getPosted_by());
             ps.setString(2, message.getMessage_text());
             ps.setLong(3, message.getTime_posted_epoch());
 
+            ps.executeUpdate();
             try(ResultSet pkeyResultSet = ps.getGeneratedKeys();)
             {
                 if(pkeyResultSet.next())
                 {
-                    int gen_msg_id = pkeyResultSet.getInt(1);
-                    return new Message(gen_msg_id, message.getPosted_by(), message.getMessage_text(), message.getTime_posted_epoch());
+                    message.setMessage_id(pkeyResultSet.getInt(1));
+                    return message;
                 }
             }
             catch (Exception e)
@@ -61,7 +62,7 @@ public class MessageDAO {
     }
 
     /**
-     * Helper function to aid with creation of message
+     * Helper function to aid with the creation of a message
      * @param message 
     */
     private Account getUser(Message message)
@@ -139,7 +140,7 @@ public class MessageDAO {
                 if(rs.next())
                 {
                     return new Message(rs.getInt("message_id"), rs.getInt("posted_by"), rs.getString("message_text"), rs.getLong("time_posted_epoch"));
-                }                
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -149,7 +150,7 @@ public class MessageDAO {
             System.out.println(e.getMessage());
         }
 
-        return new Message();
+        return null;
     }
 
     /**
@@ -160,6 +161,12 @@ public class MessageDAO {
     {
         //Check to see if the message exists, then perform deletion
         Message message = retrieveMessageByMessageId(id);
+        if(message == null)
+        {
+            return null;
+        }
+
+        //Search and delete the message of message_id = id
         try(Connection connection = ConnectionUtil.getConnection();
             PreparedStatement ps = connection.prepareStatement("DELETE FROM message WHERE message_id=?");)
         {
@@ -190,7 +197,7 @@ public class MessageDAO {
 
         //If the message id does not exist, return null
         Message message = retrieveMessageByMessageId(id);
-        if(message.equals(new Message()))
+        if(message == null)
         {
             return null;
         }
