@@ -21,6 +21,12 @@ public class SocialMediaController {
     AccountService accountService;
     MessageService messageService;
 
+    public SocialMediaController()
+    {
+        this.accountService = new AccountService();
+        this.messageService = new MessageService();
+    }
+
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
      * suite must receive a Javalin object from this method.
@@ -85,6 +91,9 @@ public class SocialMediaController {
     {
         ObjectMapper mapper = new ObjectMapper();
         Message message = mapper.readValue(ctx.body(), Message.class);
+        System.out.println(message.getMessage_text());
+        System.out.println(message.getPosted_by());
+        System.out.println(message.getTime_posted_epoch());
         Message createdMessage = messageService.createMessage(message);
         if(createdMessage != null)
         {
@@ -113,6 +122,7 @@ public class SocialMediaController {
     private void retrieveMessageByMessageIdHandler(Context ctx)
     {
         int id = Integer.parseInt(ctx.pathParam("message_id"));
+        System.out.println(id);
         Message message = messageService.retrieveMessageByMessageId(id);
         ctx.json(message);
         ctx.status(200);
@@ -124,6 +134,7 @@ public class SocialMediaController {
     private void deleteMessageByMessageIdHandler(Context ctx)
     {
         int id = Integer.parseInt(ctx.pathParam("message_id"));
+        System.out.println(id);
         Message message = messageService.deleteMessageByMessageId(id);
         ctx.json(message);
         ctx.status(200);
@@ -155,6 +166,7 @@ public class SocialMediaController {
     private void retrieveMessagesForAccountHandler(Context ctx)
     {
         int id = Integer.parseInt(ctx.pathParam("account_id"));
+        System.out.println(id);
         List<Message> messages = messageService.retrieveMessagesForAccount(id);
         ctx.json(messages);
         ctx.status(200);
